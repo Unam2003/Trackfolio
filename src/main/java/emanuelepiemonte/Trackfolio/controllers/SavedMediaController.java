@@ -1,0 +1,40 @@
+package emanuelepiemonte.Trackfolio.controllers;
+
+import emanuelepiemonte.Trackfolio.entities.SavedMedia;
+import emanuelepiemonte.Trackfolio.entities.User;
+import emanuelepiemonte.Trackfolio.payload.SavedMediaDTO;
+import emanuelepiemonte.Trackfolio.services.SavedMediaService;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/me/media")
+public class SavedMediaController {
+    private SavedMediaService savedMediaService;
+
+    public SavedMediaController(SavedMediaService savedMediaService) {
+        this.savedMediaService = savedMediaService;
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public SavedMedia addMedia(@AuthenticationPrincipal User curretUser, @RequestBody @Validated SavedMediaDTO body) {
+        return savedMediaService.addToTrackfolio(curretUser, body);
+    }
+
+    @GetMapping
+    public List<SavedMedia> getMyMedia(@AuthenticationPrincipal User currentUser) {
+        return savedMediaService.getMyTrackfolio(currentUser);
+    }
+
+    @DeleteMapping("/{mediaId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeMedia(@AuthenticationPrincipal User currentUser, @PathVariable UUID mediaId) {
+        this.savedMediaService.removeFromTrackfolio(currentUser, mediaId);
+    }
+}

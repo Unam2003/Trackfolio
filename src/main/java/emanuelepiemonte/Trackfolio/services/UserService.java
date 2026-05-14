@@ -9,6 +9,10 @@ import emanuelepiemonte.Trackfolio.exceptions.NotFoundException;
 import emanuelepiemonte.Trackfolio.payload.UserDTO;
 import emanuelepiemonte.Trackfolio.repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -88,5 +92,11 @@ public class UserService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public Page<User> findAll(int page, int size, String sortBy) {
+        if (size > 100) size = 100; // Protezione: non permettiamo di chiedere troppi dati insieme
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return this.userRepository.findAll(pageable);
     }
 }

@@ -27,6 +27,15 @@ public class SavedMediaController {
         return savedMediaService.addToTrackfolio(curretUser, body);
     }
 
+    @PutMapping("/{mediaId}")
+    public SavedMedia updateMedia(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable UUID mediaId,
+            @RequestBody @Validated SavedMediaDTO body
+    ) {
+        return this.savedMediaService.updateSavedMedia(currentUser, mediaId, body);
+    }
+
     @GetMapping
     public List<SavedMedia> getMyMedia(@AuthenticationPrincipal User currentUser) {
         return savedMediaService.getMyTrackfolio(currentUser);
@@ -37,4 +46,6 @@ public class SavedMediaController {
     public void removeMedia(@AuthenticationPrincipal User currentUser, @PathVariable UUID mediaId) {
         this.savedMediaService.removeFromTrackfolio(currentUser, mediaId);
     }
+
+
 }

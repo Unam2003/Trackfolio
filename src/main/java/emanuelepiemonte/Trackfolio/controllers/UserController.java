@@ -3,6 +3,7 @@ package emanuelepiemonte.Trackfolio.controllers;
 import emanuelepiemonte.Trackfolio.entities.User;
 import emanuelepiemonte.Trackfolio.payload.UserDTO;
 import emanuelepiemonte.Trackfolio.services.UserService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -70,5 +71,12 @@ public class UserController {
         this.userService.findByIdAndDelete(userId);
     }
 
+    @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Page<User> getAllUsers(@RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "10") int size,
+                                  @RequestParam(defaultValue = "userId") String sortBy) {
+        return this.userService.findAll(page, size, sortBy);
+    }
 
 }

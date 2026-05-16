@@ -30,6 +30,7 @@ public class SecurityConfig {
             req.requestMatchers("/auth/**").permitAll();
             req.requestMatchers("/movies/**", "/tv_series/**", "/anime/**").permitAll();
             req.requestMatchers("/**").authenticated();
+            req.requestMatchers("/games/**").permitAll();
         });
 
         httpSecurity.cors(Customizer.withDefaults());
@@ -54,6 +55,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
 
         return source;
     }

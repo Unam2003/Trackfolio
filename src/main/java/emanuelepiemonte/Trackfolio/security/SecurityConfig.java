@@ -28,9 +28,12 @@ public class SecurityConfig {
 
         httpSecurity.authorizeHttpRequests(req -> {
             req.requestMatchers("/auth/**").permitAll();
-            req.requestMatchers("/movies/**", "/tv_series/**", "/anime/**").permitAll();
+            req.requestMatchers("/movies/**", "/tv_series/**", "/anime/**", "/games/**", "/catalog/**").permitAll();
+            req.requestMatchers(org.springframework.http.HttpMethod.POST, "/tv_series").authenticated();
+            req.requestMatchers(org.springframework.http.HttpMethod.PUT, "/tv_series/watch").authenticated();
+            req.requestMatchers(org.springframework.http.HttpMethod.PUT, "/me/media/*/status").authenticated();
+
             req.requestMatchers("/**").authenticated();
-            req.requestMatchers("/games/**").permitAll();
         });
 
         httpSecurity.cors(Customizer.withDefaults());
@@ -55,8 +58,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
-
+        
         return source;
     }
 }

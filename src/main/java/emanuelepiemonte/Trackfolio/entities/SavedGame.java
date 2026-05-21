@@ -28,7 +28,7 @@ public class SavedGame {
     @Enumerated(EnumType.STRING)
     private Platform platform;
 
-    private int rating;
+    private double rating;
 
     @Column(name = "hours_played")
     private int hoursPlayed;

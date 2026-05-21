@@ -5,12 +5,12 @@ import emanuelepiemonte.Trackfolio.entities.User;
 import emanuelepiemonte.Trackfolio.payload.SavedGameDTO;
 import emanuelepiemonte.Trackfolio.services.SavedGameService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/me/games")
@@ -23,14 +23,15 @@ public class SavedGameController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SavedGame addGame(@AuthenticationPrincipal User curretUser, @RequestBody @Validated SavedGameDTO body) {
-        return savedGameService.addToTrackfolio(curretUser, body);
+    public SavedGame addGame(@AuthenticationPrincipal User currentUser, @RequestBody @Validated SavedGameDTO body) {
+        return savedGameService.addToTrackfolio(currentUser, body);
     }
 
     @PutMapping("/{gameId}")
-    public SavedGame updateGame(@AuthenticationPrincipal User curretUser, @PathVariable UUID gameId, @RequestBody @Validated SavedGameDTO body) {
-        return this.savedGameService.updateSavedGame(curretUser, gameId, body);
+    public SavedGame updateGame(@AuthenticationPrincipal User currentUser, @PathVariable UUID gameId, @RequestBody @Validated SavedGameDTO body) {
+        return this.savedGameService.updateSavedGame(currentUser, gameId, body);
     }
+
 
     @GetMapping
     public List<SavedGame> getMyGames(@AuthenticationPrincipal User currentUser) {
@@ -46,6 +47,20 @@ public class SavedGameController {
     @GetMapping("/total-hours")
     public Integer getTotalHours(@AuthenticationPrincipal User currentUser) {
         return this.savedGameService.getTotalHours(currentUser);
+    }
+
+    @GetMapping("/check")
+    public ResponseEntity<?> checkGameStatus(@AuthenticationPrincipal User currentUser, @RequestParam Long rawgId) {
+        Optional<SavedGame> savedGameOpt = this.savedGameService.findByUserAndRawId(currentUser, rawgId);
+
+        Map<String, Object> response = new HashMap<>();
+        if (savedGameOpt.isPresent()) {
+            response.put("savedGameId", savedGameOpt.get().getSavedGameId());
+            response.put("status", savedGameOpt.get().getStatus());
+        } else {
+            response.put("savedGameId", null);
+        }
+        return ResponseEntity.ok(response);
     }
 
 }

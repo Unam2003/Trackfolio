@@ -22,8 +22,8 @@ public record SavedGameDTO(
         @NotNull(message = "Lo stato (IN_LIST, PLAYING, COMPLETED, PLATINUM, DROPPED) è obbligatorio!")
         GameStatus status,
 
-        @Min(0) @Max(10)
-        int rating,
+        @Min(0) @Max(5)
+        Double rating,
 
         @Min(0)
         int hoursPlayed

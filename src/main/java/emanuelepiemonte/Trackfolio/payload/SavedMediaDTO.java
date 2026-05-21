@@ -23,12 +23,12 @@ public record SavedMediaDTO(
         MediaStatus status,
 
         @Min(0) @Max(10)
-        int rating,
+        Integer rating,
 
         @Min(0)
-        int lastEpisodeWatched,
+        Integer lastEpisodeWatched,
 
         @Min(0)
-        int lastSeasonWatched
+        Integer lastSeasonWatched
 ) {
 }

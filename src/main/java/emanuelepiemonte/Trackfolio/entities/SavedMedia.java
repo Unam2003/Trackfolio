@@ -30,6 +30,7 @@ public class SavedMedia {
 
     private int rating;
 
+    @Enumerated(EnumType.STRING)
     private MediaStatus status;
 
     @Column(name = "last_episode_watched")

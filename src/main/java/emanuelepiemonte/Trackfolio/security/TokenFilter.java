@@ -53,10 +53,20 @@ public class TokenFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return new AntPathMatcher().match("/auth/**", request.getServletPath()) ||
-                new AntPathMatcher().match("/movies/**", request.getServletPath()) ||
-                new AntPathMatcher().match("/tv_series/**", request.getServletPath()) ||
-                new AntPathMatcher().match("/anime/**", request.getServletPath());
+        AntPathMatcher pathMatcher = new AntPathMatcher();
+        String path = request.getServletPath();
+        String method = request.getMethod();
+
+        if (pathMatcher.match("/tv_series", path) && "POST".equalsIgnoreCase(method)) {
+            return false;
+        }
+        if (pathMatcher.match("/tv_series/watch", path) || pathMatcher.match("/tv_series/watch/**", path)) {
+            return false;
+        }
+        return pathMatcher.match("/auth/**", path) ||
+                pathMatcher.match("/movies/**", path) ||
+                pathMatcher.match("/tv_series/**", path) ||
+                pathMatcher.match("/anime/**", path);
     }
 
 }

@@ -38,7 +38,7 @@ public class SavedGameService {
         newGame.setUser(currentUser);
 
         newGame.setStatus(body.status() != null ? body.status() : GameStatus.IN_LIST);
-        newGame.setRating(body.rating() != 0 ? body.rating() : 0);
+        newGame.setRating(body.rating());
         newGame.setHoursPlayed(body.hoursPlayed() != 0 ? body.hoursPlayed() : 0);
 
         return this.savedGameRepository.save(newGame);
@@ -77,5 +77,10 @@ public class SavedGameService {
         Integer total = this.savedGameRepository.sumTotalHoursByUser(user);
         return total != null ? total : 0;
     }
+
+    public Optional<SavedGame> findByUserAndRawId(User currentUser, Long rawgId) {
+        return this.savedGameRepository.findByUserAndRawgId(currentUser, rawgId);
+    }
+
 
 }

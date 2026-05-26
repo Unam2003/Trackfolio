@@ -72,5 +72,10 @@ public class MediaController {
         return ResponseEntity.ok(this.savedMediaService.updateLastWatchedEpisode(currentUser, tmdbId, season, episode));
     }
 
+    @GetMapping("/actors/details")
+    public ResponseEntity<Object> getActorDetails(@RequestParam int id) {
+        return ResponseEntity.ok(externalApiService.fetchActorDetails(id));
+    }
+
 
 }

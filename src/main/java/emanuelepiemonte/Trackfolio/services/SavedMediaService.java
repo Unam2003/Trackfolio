@@ -8,6 +8,7 @@ import emanuelepiemonte.Trackfolio.exceptions.BadRequestException;
 import emanuelepiemonte.Trackfolio.exceptions.NotFoundException;
 import emanuelepiemonte.Trackfolio.exceptions.UnauthorizedException;
 import emanuelepiemonte.Trackfolio.payload.SavedMediaDTO;
+import emanuelepiemonte.Trackfolio.payload.StatsRespDTO;
 import emanuelepiemonte.Trackfolio.repositories.SavedMediaRepository;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +46,39 @@ public class SavedMediaService {
         newMedia.setLastEpisodeWatched(body.lastEpisodeWatched() != 0 ? body.lastEpisodeWatched() : 0);
         newMedia.setLastSeasonWatched(body.lastSeasonWatched() != 0 ? body.lastSeasonWatched() : 1);
 
+        try {
+            if (body.type() == emanuelepiemonte.Trackfolio.entities.MediaType.MOVIE) {
+                Object movieData = this.externalApiService.fetchMovieDetails(body.tmdbId().intValue());
+                if (movieData instanceof java.util.Map) {
+                    java.util.Map<?, ?> map = (java.util.Map<?, ?>) movieData;
+                    Number runtime = (Number) map.get("runtime");
+                    if (runtime != null) {
+                        newMedia.setRuntime(runtime.intValue());
+                    }
+                }
+            } else {
+                Object tvData = this.externalApiService.fetchTvSeriesDetails(body.tmdbId().intValue());
+                if (tvData instanceof java.util.Map) {
+                    java.util.Map<?, ?> map = (java.util.Map<?, ?>) tvData;
+
+                    Number totalEpisodes = (Number) map.get("number_of_episodes");
+                    if (totalEpisodes != null) {
+                        newMedia.setNumberOfEpisodes(totalEpisodes.intValue());
+                    }
+
+                    java.util.List<?> runTimeList = (java.util.List<?>) map.get("episode_run_time");
+                    if (runTimeList != null && !runTimeList.isEmpty()) {
+                        Number epRuntime = (Number) runTimeList.get(0);
+                        newMedia.setEpisodeRunTime(epRuntime.intValue());
+                    } else {
+                        newMedia.setEpisodeRunTime(45);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Errore durante il recupero dei dettagli per le statistiche: " + e.getMessage());
+        }
+
         return this.savedMediaRepository.save(newMedia);
     }
 
@@ -72,7 +106,6 @@ public class SavedMediaService {
             if (episode > 1) {
                 found.setLastEpisodeWatched(episode - 1);
             } else if (season > 1) {
-                // Recuperiamo la lunghezza della stagione precedente per impostare l'ultimo episodio di quella stagione
                 int previousSeason = season - 1;
                 int lastEpOfPreviousSeason = getEpisodesCountFromTmdb(tmdbId, previousSeason);
                 found.setLastEpisodeWatched(lastEpOfPreviousSeason);
@@ -86,15 +119,12 @@ public class SavedMediaService {
 
         // --- 2. LOGICA PER ANDARE AVANTI (Incremento) ---
 
-        // Recuperiamo il numero reale di episodi di questa stagione tramite l'ExternalApiService
         int totalEpisodesInCurrentSeason = getEpisodesCountFromTmdb(tmdbId, season);
 
         if (episode > totalEpisodesInCurrentSeason) {
-            // Se l'episodio richiesto supera la stagione, verifichiamo quante stagioni esistono in totale
             int totalSeasonsInSeries = getTotalSeasonsFromTmdb(tmdbId);
 
             if (season < totalSeasonsInSeries) {
-                // C'è una stagione successiva: passiamo automaticamente a S(corrente + 1) ed Episodio 1
                 found.setLastSeasonWatched(season + 1);
                 found.setLastEpisodeWatched(1);
             } else {
@@ -124,7 +154,6 @@ public class SavedMediaService {
             throw new UnauthorizedException("Non puoi modificare i media degli altri!");
         }
 
-        // Converti la stringa del frontend nell'Enum MediaStatus
         try {
             found.setStatus(MediaStatus.valueOf(status));
         } catch (IllegalArgumentException e) {
@@ -184,6 +213,39 @@ public class SavedMediaService {
 
     public Optional<SavedMedia> findByTmdbIdAndUser(User currentUser, Long tmdbId) {
         return this.savedMediaRepository.findByUserAndTmdbId(currentUser, tmdbId);
+    }
+
+    public StatsRespDTO getUserStats(User currentUser) {
+        List<SavedMedia> allMedia = this.savedMediaRepository.findByUser(currentUser);
+
+        int minutiSerie = 0;
+        int totaleEpisodi = 0;
+        int minutiFilm = 0;
+        int totaleFilm = 0;
+
+        for (SavedMedia media : allMedia) {
+            if (media.getType() == emanuelepiemonte.Trackfolio.entities.MediaType.MOVIE) {
+                if (media.getRuntime() != null) {
+                    minutiFilm += media.getRuntime();
+                    totaleFilm += 1;
+                }
+            } else {
+                if (media.getEpisodeRunTime() != null) {
+                    int episodiVisti = 0;
+
+                    if (media.getStatus() == emanuelepiemonte.Trackfolio.entities.MediaStatus.COMPLETED) {
+                        episodiVisti = media.getNumberOfEpisodes() != null ? media.getNumberOfEpisodes() : 0;
+                    } else {
+                        episodiVisti = media.getLastEpisodeWatched();
+                    }
+
+                    minutiSerie += (episodiVisti * media.getEpisodeRunTime());
+                    totaleEpisodi += episodiVisti;
+                }
+            }
+        }
+
+        return new StatsRespDTO(minutiSerie, totaleEpisodi, minutiFilm, totaleFilm);
     }
 
 

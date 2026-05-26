@@ -39,12 +39,21 @@ public class SavedMedia {
     @Column(name = "last_season_watched")
     private int lastSeasonWatched;
 
+    @Column(name = "run_time")
+    private Integer runtime;
+
+    @Column(name = "episode_run_time")
+    private Integer episodeRunTime;
+
+    @Column(name = "number_of_episodes")
+    private Integer numberOfEpisodes;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
 
-    public SavedMedia(String title, Long tmdbId, String posterPath, MediaType type, int rating, MediaStatus status, int lastEpisodeWatched, int lastSeasonWatched, User user) {
+    public SavedMedia(String title, Long tmdbId, String posterPath, MediaType type, int rating, MediaStatus status, int lastEpisodeWatched, int lastSeasonWatched, Integer runtime, Integer episodeRunTime, Integer numberOfEpisodes, User user) {
         this.title = title;
         this.tmdbId = tmdbId;
         this.posterPath = posterPath;
@@ -53,6 +62,9 @@ public class SavedMedia {
         this.status = status;
         this.lastEpisodeWatched = lastEpisodeWatched;
         this.lastSeasonWatched = lastSeasonWatched;
+        this.runtime = runtime;
+        this.episodeRunTime = episodeRunTime;
+        this.numberOfEpisodes = numberOfEpisodes;
         this.user = user;
     }
 }

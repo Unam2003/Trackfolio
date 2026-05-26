@@ -3,6 +3,7 @@ package emanuelepiemonte.Trackfolio.controllers;
 import emanuelepiemonte.Trackfolio.entities.SavedMedia;
 import emanuelepiemonte.Trackfolio.entities.User;
 import emanuelepiemonte.Trackfolio.payload.SavedMediaDTO;
+import emanuelepiemonte.Trackfolio.payload.StatsRespDTO;
 import emanuelepiemonte.Trackfolio.services.SavedMediaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +67,22 @@ public class SavedMediaController {
             @PathVariable UUID mediaId,
             @RequestParam String status) {
         return this.savedMediaService.updateStatus(currentUser, mediaId, status);
+    }
+
+
+    @GetMapping("/stats")
+    public StatsRespDTO getMyStats(@AuthenticationPrincipal User currentUser) {
+        return this.savedMediaService.getUserStats(currentUser);
+    }
+
+    @PutMapping("/watch")
+    public SavedMedia updateWatchProgress(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam Long tmdbId,
+            @RequestParam int season,
+            @RequestParam int episode
+    ) {
+        return this.savedMediaService.updateLastWatchedEpisode(currentUser, tmdbId, season, episode);
     }
 
 

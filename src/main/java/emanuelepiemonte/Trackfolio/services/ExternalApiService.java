@@ -178,5 +178,27 @@ public class ExternalApiService {
         return restTemplate.getForObject(url, GameRespDTO.class);
     }
 
+    public Object fetchActorDetails(int id) {
+        String url = tmdbUrl + "/person/" + id + "?language=it-IT&append_to_response=combined_credits";
+        Object response = callGenericTmdb(url);
+
+        if (response instanceof java.util.Map) {
+            java.util.Map actorMap = (java.util.Map) response;
+            String bio = (String) actorMap.get("biography");
+
+            if (bio == null || bio.equals("")) {
+                String urlEng = tmdbUrl + "/person/" + id + "?language=en-US";
+                Object responseEng = callGenericTmdb(urlEng);
+
+                if (responseEng instanceof java.util.Map) {
+                    java.util.Map actorMapEng = (java.util.Map) responseEng;
+                    actorMap.put("biography", actorMapEng.get("biography"));
+                }
+            }
+        }
+
+        return response;
+    }
+
 
 }

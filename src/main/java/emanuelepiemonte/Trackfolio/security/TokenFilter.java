@@ -66,7 +66,9 @@ public class TokenFilter extends OncePerRequestFilter {
         return pathMatcher.match("/auth/**", path) ||
                 pathMatcher.match("/movies/**", path) ||
                 pathMatcher.match("/tv_series/**", path) ||
-                pathMatcher.match("/anime/**", path);
+                pathMatcher.match("/anime/**", path) ||
+                pathMatcher.match("/games/**", path) ||
+                pathMatcher.match("/actors/**", path);
     }
 
 }

@@ -17,7 +17,7 @@ public record UserDTO(
         @Email(message = "L'email inserita non è del formato corretto")
         String email,
         @Size(min = 4, message = "La password deve avere almeno 4 caratteri")
-        @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{4,}$", message = "La password deve contenere almeno una maiuscola, una minuscola,....")
+        @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{4,}$", message = "La password deve contenere almeno una lettera maiuscola, una lettera minuscola, almeno un numero e una lunghezza minima di 4 caratteri")
         String password,
         String avatar,
         Role role

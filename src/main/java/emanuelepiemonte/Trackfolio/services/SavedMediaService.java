@@ -114,33 +114,36 @@ public class SavedMediaService {
                 found.setLastEpisodeWatched(0);
                 found.setLastSeasonWatched(1);
             }
+            found.setStatus(MediaStatus.WATCHING);
             return this.savedMediaRepository.save(found);
         }
 
         // --- 2. LOGICA PER ANDARE AVANTI (Incremento) ---
 
         int totalEpisodesInCurrentSeason = getEpisodesCountFromTmdb(tmdbId, season);
+        int totalSeasonsInSeries = getTotalSeasonsFromTmdb(tmdbId);
 
         if (episode > totalEpisodesInCurrentSeason) {
-            int totalSeasonsInSeries = getTotalSeasonsFromTmdb(tmdbId);
-
             if (season < totalSeasonsInSeries) {
                 found.setLastSeasonWatched(season + 1);
                 found.setLastEpisodeWatched(1);
+                found.setStatus(MediaStatus.WATCHING);
             } else {
-                // È l'ultima stagione: blocchiamo l'avanzamento all'ultimo episodio reale e completiamo il tracking
+                found.setLastSeasonWatched(season);
                 found.setLastEpisodeWatched(totalEpisodesInCurrentSeason);
                 found.setStatus(MediaStatus.COMPLETED);
             }
         } else {
-            // L'episodio ci sta dentro: aggiorniamo normalmente
             found.setLastSeasonWatched(season);
             found.setLastEpisodeWatched(episode);
-        }
 
-        // Aggiorna lo stato se era ancora da iniziare
-        if (found.getStatus() == MediaStatus.PLAN_TO_WATCH) {
-            found.setStatus(MediaStatus.WATCHING);
+            if (season == totalSeasonsInSeries && episode == totalEpisodesInCurrentSeason) {
+                found.setStatus(MediaStatus.COMPLETED);
+            } else if (found.getStatus() == MediaStatus.PLAN_TO_WATCH) {
+                found.setStatus(MediaStatus.WATCHING);
+            } else if (found.getStatus() == MediaStatus.COMPLETED) {
+                found.setStatus(MediaStatus.WATCHING);
+            }
         }
 
         return this.savedMediaRepository.save(found);

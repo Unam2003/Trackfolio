@@ -263,6 +263,7 @@ public class SavedMediaService {
                                                     (Number) season.get("episode_count");
                                             if (seasonNumber != null
                                                     && episodeCount != null
+                                                    && seasonNumber.intValue() > 0
                                                     && seasonNumber.intValue() < media.getLastSeasonWatched()) {
 
                                                 episodiVisti += episodeCount.intValue();

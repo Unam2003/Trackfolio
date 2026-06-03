@@ -216,6 +216,7 @@ public class SavedMediaService {
     }
 
     public StatsRespDTO getUserStats(User currentUser) {
+
         List<SavedMedia> allMedia = this.savedMediaRepository.findByUser(currentUser);
 
         int minutiSerie = 0;
@@ -225,6 +226,7 @@ public class SavedMediaService {
 
         for (SavedMedia media : allMedia) {
             if (media.getType() == emanuelepiemonte.Trackfolio.entities.MediaType.MOVIE) {
+
                 if (media.getRuntime() != null) {
                     minutiFilm += media.getRuntime();
                     totaleFilm += 1;
@@ -234,17 +236,51 @@ public class SavedMediaService {
                     int episodiVisti = 0;
 
                     if (media.getStatus() == emanuelepiemonte.Trackfolio.entities.MediaStatus.COMPLETED) {
-                        episodiVisti = media.getNumberOfEpisodes() != null ? media.getNumberOfEpisodes() : 0;
+
+                        episodiVisti = media.getNumberOfEpisodes() != null
+                                ? media.getNumberOfEpisodes()
+                                : 0;
+
                     } else {
                         episodiVisti = media.getLastEpisodeWatched();
-                    }
+                        if (media.getLastSeasonWatched() > 1) {
+                            try {
+                                Object tvData = externalApiService.fetchTvSeriesDetails(
+                                        media.getTmdbId().intValue()
+                                );
 
-                    minutiSerie += (episodiVisti * media.getEpisodeRunTime());
+                                if (tvData instanceof java.util.Map) {
+                                    java.util.Map map = (java.util.Map) tvData;
+                                    java.util.List seasons =
+                                            (java.util.List) map.get("seasons");
+                                    if (seasons != null) {
+                                        for (Object seasonObj : seasons) {
+                                            java.util.Map season =
+                                                    (java.util.Map) seasonObj;
+                                            Number seasonNumber =
+                                                    (Number) season.get("season_number");
+                                            Number episodeCount =
+                                                    (Number) season.get("episode_count");
+                                            if (seasonNumber != null
+                                                    && episodeCount != null
+                                                    && seasonNumber.intValue() < media.getLastSeasonWatched()) {
+
+                                                episodiVisti += episodeCount.intValue();
+                                            }
+                                        }
+                                    }
+                                }
+
+                            } catch (Exception e) {
+                                System.err.println("Errore calcolo episodi: " + e.getMessage());
+                            }
+                        }
+                    }
+                    minutiSerie += episodiVisti * media.getEpisodeRunTime();
                     totaleEpisodi += episodiVisti;
                 }
             }
         }
-
         return new StatsRespDTO(minutiSerie, totaleEpisodi, minutiFilm, totaleFilm);
     }
 

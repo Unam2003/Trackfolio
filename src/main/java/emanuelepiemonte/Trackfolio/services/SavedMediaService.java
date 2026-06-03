@@ -225,7 +225,7 @@ public class SavedMediaService {
 
         for (SavedMedia media : allMedia) {
             if (media.getType() == emanuelepiemonte.Trackfolio.entities.MediaType.MOVIE) {
-                if (media.getRuntime() != null) {
+                if (media.getRuntime() != null && media.getStatus() == MediaStatus.COMPLETED) {
                     minutiFilm += media.getRuntime();
                     totaleFilm += 1;
                 }
@@ -233,10 +233,16 @@ public class SavedMediaService {
                 if (media.getEpisodeRunTime() != null) {
                     int episodiVisti = 0;
 
-                    if (media.getStatus() == emanuelepiemonte.Trackfolio.entities.MediaStatus.COMPLETED) {
+                    if (media.getStatus() == MediaStatus.COMPLETED) {
                         episodiVisti = media.getNumberOfEpisodes() != null ? media.getNumberOfEpisodes() : 0;
                     } else {
-                        episodiVisti = media.getLastEpisodeWatched();
+                        int stagioneCorrente = media.getLastSeasonWatched();
+                        int episodiStagioneCorrente = media.getLastEpisodeWatched();
+
+                        for (int s = 1; s < stagioneCorrente; s++) {
+                            episodiVisti += getEpisodesCountFromTmdb(media.getTmdbId(), s);
+                        }
+                        episodiVisti += episodiStagioneCorrente;
                     }
 
                     minutiSerie += (episodiVisti * media.getEpisodeRunTime());
@@ -250,3 +256,4 @@ public class SavedMediaService {
 
 
 }
+

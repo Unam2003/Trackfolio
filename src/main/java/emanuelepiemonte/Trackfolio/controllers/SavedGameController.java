@@ -26,10 +26,11 @@ public class SavedGameController {
     public SavedGame addGame(@AuthenticationPrincipal User currentUser, @RequestBody @Validated SavedGameDTO body) {
         return savedGameService.addToTrackfolio(currentUser, body);
     }
+    
 
-    @PutMapping("/{gameId}")
-    public SavedGame updateGame(@AuthenticationPrincipal User currentUser, @PathVariable UUID gameId, @RequestBody @Validated SavedGameDTO body) {
-        return this.savedGameService.updateSavedGame(currentUser, gameId, body);
+    @PatchMapping("/{gameId}")
+    public SavedGame patchGame(@AuthenticationPrincipal User currentUser, @PathVariable UUID gameId, @RequestBody Map<String, Object> body) {
+        return this.savedGameService.patchSavedGame(currentUser, gameId, body);
     }
 
 

@@ -44,20 +44,41 @@ public class SavedGameService {
         return this.savedGameRepository.save(newGame);
     }
 
-    public SavedGame updateSavedGame(User currentUser, UUID savedGameId, SavedGameDTO body) {
-        SavedGame found = this.savedGameRepository.findById(savedGameId).orElseThrow(() -> new NotFoundException("Gioco non trovato"));
 
-        if (!found.getUser().getUserId().equals(currentUser.getUserId()) && currentUser.getRole() != Role.ADMIN) {
+    public SavedGame patchSavedGame(User currentUser, UUID savedGameId, java.util.Map<String, Object> body) {
+
+        SavedGame found = this.savedGameRepository.findById(savedGameId)
+                .orElseThrow(() -> new NotFoundException("Gioco non trovato"));
+
+        if (!found.getUser().getUserId().equals(currentUser.getUserId())
+                && currentUser.getRole() != Role.ADMIN) {
+
             throw new UnauthorizedException("Non puoi modificare i giochi degli altri!");
         }
 
-        if (body.status() != null) found.setStatus(body.status());
-        if (body.rating() != 0) found.setRating(body.rating());
-        if (body.hoursPlayed() != 0) found.setHoursPlayed(body.hoursPlayed());
-        if (body.platform() != null) found.setPlatform(body.platform());
+        if (body.containsKey("status")) {
+            found.setStatus(GameStatus.valueOf(body.get("status").toString()));
+        }
+
+        if (body.containsKey("hoursPlayed")) {
+            found.setHoursPlayed(Integer.parseInt(body.get("hoursPlayed").toString()));
+        }
+
+        if (body.containsKey("platform")) {
+            found.setPlatform(
+                    emanuelepiemonte.Trackfolio.entities.Platform.valueOf(
+                            body.get("platform").toString()
+                    )
+            );
+        }
+
+        if (body.containsKey("rating")) {
+            found.setRating(Double.parseDouble(body.get("rating").toString()));
+        }
 
         return this.savedGameRepository.save(found);
     }
+
 
     public List<SavedGame> getMyGames(User currentUser) {
         return this.savedGameRepository.findByUser(currentUser);
